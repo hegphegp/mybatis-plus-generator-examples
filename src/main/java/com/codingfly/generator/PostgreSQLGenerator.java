@@ -23,6 +23,7 @@ import com.baomidou.mybatisplus.generator.InjectionConfig;
 import com.baomidou.mybatisplus.generator.config.*;
 import com.baomidou.mybatisplus.generator.config.converts.OracleTypeConvert;
 import com.baomidou.mybatisplus.generator.config.po.TableInfo;
+import com.baomidou.mybatisplus.generator.config.rules.DateType;
 import com.baomidou.mybatisplus.generator.config.rules.IColumnType;
 import com.baomidou.mybatisplus.generator.config.rules.NamingStrategy;
 import com.baomidou.mybatisplus.generator.engine.FreemarkerTemplateEngine;
@@ -41,21 +42,21 @@ import java.util.Map;
 public class PostgreSQLGenerator extends GeneratorTest {
 
     public static void main(String[] args) {
-        int result = scanner();
         AutoGenerator mpg = new AutoGenerator();
 
         // 全局配置
         GlobalConfig gc = new GlobalConfig();
-        gc.setOutputDir("D://");
+        gc.setOutputDir("/home/hgp/aa/bb/postgres");
         gc.setFileOverride(true);
         gc.setActiveRecord(true);// 开启 activeRecord 模式
         gc.setEnableCache(false);// XML 二级缓存
         gc.setBaseResultMap(true);// XML ResultMap
         gc.setBaseColumnList(false);// XML columList
         //gc.setKotlin(true); // 是否生成 kotlin 代码
-        //gc.setSwagger2(true); // 是否生成 Swagger2 注解
+        gc.setSwagger2(true); // 是否生成 Swagger2 注解
         gc.setAuthor("hubin");
-        gc.setIdType(IdType.AUTO);
+        gc.setDateType(DateType.ONLY_DATE);
+//        gc.setIdType(IdType.AUTO); // 要自定义ID的生成策略，否则代码生成器不会生成
 
         // 自定义文件命名，注意 %s 会自动填充表实体属性！
         // gc.setEntityName("%sEntity");
@@ -70,31 +71,27 @@ public class PostgreSQLGenerator extends GeneratorTest {
         DataSourceConfig dsc = new DataSourceConfig();
         dsc.setSchemaName("public");// 指定 SCHEMA
         dsc.setDbType(DbType.POSTGRE_SQL);
-        dsc.setTypeConvert(new OracleTypeConvert() {
-            // 自定义数据库表字段类型转换【可选】
-            @Override
-            public IColumnType processTypeConvert(GlobalConfig config, String fieldType) {
-                System.out.println("转换类型：" + fieldType);
-                return super.processTypeConvert(config, fieldType);
-            }
-        });
         // 自定义数据库信息查询
         dsc.setDbQuery(new MyPostgreSqlQuery());
         dsc.setDriverName("org.postgresql.Driver");
-        dsc.setUsername("postgres");
-        dsc.setPassword("521");
-        dsc.setUrl("jdbc:postgresql://localhost:5432/mybatis-plus");
+        dsc.setUsername("sde");
+        dsc.setPassword("postgres");
+        dsc.setUrl("jdbc:postgresql://localhost:5432/postgres");
         mpg.setDataSource(dsc);
+
+
 
         // 策略配置
         StrategyConfig strategy = new StrategyConfig();
+
         // strategy.setCapitalMode(true);// 全局大写命名
         // strategy.setDbColumnUnderline(true);// 全局下划线命名
         strategy.setTablePrefix("bmd_", "mp_");// 表前缀
         strategy.setFieldPrefix("A_");
+        strategy.setEntityTableFieldAnnotationEnable(true); // 字段是否生成映射注解，实体类是否生成 @TableName("") 注解
         strategy.setNaming(NamingStrategy.underline_to_camel);// 表名生成策略
         strategy.setColumnNaming(NamingStrategy.underline_to_camel);// 允许字段策略独立设置，默认为 naming 策略
-        strategy.setInclude("sys_user", "^mp.*", "ok"); // 需要生成的表，支持正则表达式
+//        strategy.setInclude("*"); // 需要生成的表，支持正则表达式
         // strategy.setExclude("test"); // 排除生成的表，支持正则表达式
         // 自定义实体父类
         // strategy.setSuperEntityClass("com.baomidou.demo.TestEntity");
@@ -121,23 +118,28 @@ public class PostgreSQLGenerator extends GeneratorTest {
         pc.setModuleName("test");
         pc.setParent("com.baomidou");// 自定义包路径
         pc.setController("controller");// 这里是控制器包名，默认 web
-        mpg.setPackageInfo(pc);
+//        Map pathInfo = new HashMap();
+//        pathInfo.put(ConstVal.XML_PATH, "/home/hgp/aa/hgphgphgp/");
+//        pc.setPathInfo(pathInfo);
+//        mpg.setPackageInfo(pc);
 
         // 注入自定义配置，可以在 VM 中使用 cfg.abc 设置的值
         InjectionConfig cfg = new InjectionConfig() {
             @Override
             public void initMap() {
-                Map<String, Object> map = new HashMap<>();
+                Map<String, Object> map = new HashMap();
+//                map.put("dbType", DbType.POSTGRE_SQL.getDb());
+                map.put("schema", "public");
                 map.put("abc", this.getConfig().getGlobalConfig().getAuthor() + "-mp");
                 this.setMap(map);
             }
         };
-        List<FileOutConfig> focList = new ArrayList<>();
-        focList.add(new FileOutConfig("/templates/dto.java" + ((1 == result) ? ".ftl" : ".vm")) {
+        List<FileOutConfig> focList = new ArrayList();
+        focList.add(new FileOutConfig("/templates/mapper.xml.ftl") {
             @Override
             public String outputFile(TableInfo tableInfo) {
                 // 自定义输入文件名称
-                return "D://test/my_" + tableInfo.getEntityName() + StringPool.DOT_JAVA;
+                return "/home/hgp/aa/hgphgphgp/" + tableInfo.getEntityName() + StringPool.DOT_XML;
             }
         });
         cfg.setFileOutConfigList(focList);
@@ -145,7 +147,9 @@ public class PostgreSQLGenerator extends GeneratorTest {
 
         // 自定义模板配置，模板可以参考源码 /mybatis-plus/src/main/resources/template 使用 copy
         // 至您项目 src/main/resources/template 目录下，模板名称也可自定义如下配置：
-        // TemplateConfig tc = new TemplateConfig();
+        TemplateConfig tc = new TemplateConfig();
+        tc.setXml(null); // // 这个标注了则则不再默认路径下生成XML文件了
+        mpg.setTemplate(tc);
         // tc.setController("...");
         // tc.setEntity("...");
         // tc.setMapper("...");
@@ -154,10 +158,9 @@ public class PostgreSQLGenerator extends GeneratorTest {
         // tc.setServiceImpl("...");
         // mpg.setTemplate(tc);
 
+        com.baomidou.mybatisplus.generator.config.builder.ConfigBuilder a;
         // 执行生成
-        if (1 == result) {
-            mpg.setTemplateEngine(new FreemarkerTemplateEngine());
-        }
+        mpg.setTemplateEngine(new FreemarkerTemplateEngine());
         mpg.execute();
         // 打印注入设置
         System.err.println(mpg.getCfg().getMap().get("abc"));

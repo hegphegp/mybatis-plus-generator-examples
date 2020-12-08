@@ -34,8 +34,9 @@ import lombok.experimental.Accessors;
 @Accessors(chain = true)
     </#if>
 </#if>
+
 <#if table.convert>
-@TableName("${table.name}")
+@TableName("${table.name}"<#if cfg.dbType?? && cfg.dbType=="postgresql" && cfg.schema??>, schema="${cfg.schema}"</#if>)
 </#if>
 <#if swagger2>
 @ApiModel(value="${entity}对象", description="${table.comment!}")
