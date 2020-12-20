@@ -24,6 +24,7 @@ import com.baomidou.mybatisplus.generator.config.po.TableInfo;
 import com.baomidou.mybatisplus.generator.config.rules.DateType;
 import com.baomidou.mybatisplus.generator.config.rules.NamingStrategy;
 import com.baomidou.mybatisplus.generator.engine.FreemarkerTemplateEngine;
+import com.codingfly.generator.common.FileGenerate;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -38,8 +39,9 @@ import java.util.Map;
  */
 public class PostgresqlGenerator {
 
-    public static void generatorCode(String url, String username, String password, String author, String outputDir, String schema, String tableName, IdType idType, String module, String packagePath, Boolean generateXml,
-                                     Boolean fileOrverride, Boolean activeRecord, Boolean swagger, Boolean enableCache, Boolean baseResultMap, Boolean baseColumnList) {
+    public static void generatorCode(String url, String username, String password, String author, String outputDir, String schema, String tableName, String entityBaseName, IdType idType,
+                                     String module, String packagePath, FileGenerate fileGenerate, Boolean activeRecord, Boolean swagger, Boolean enableCache,
+                                     Boolean baseResultMap, Boolean baseColumnList) {
         AutoGenerator mpg = new AutoGenerator();
 
         // 包配置
@@ -52,7 +54,7 @@ public class PostgresqlGenerator {
         // 全局配置
         GlobalConfig gc = new GlobalConfig();
         gc.setOutputDir(outputDir+"/java/");
-        gc.setFileOverride(fileOrverride);
+        gc.setFileOverride(false);
         gc.setActiveRecord(activeRecord);// 开启 activeRecord 模式
         gc.setEnableCache(enableCache);// XML 二级缓存
         gc.setBaseResultMap(baseResultMap);// XML ResultMap
@@ -62,13 +64,21 @@ public class PostgresqlGenerator {
         gc.setDateType(DateType.ONLY_DATE);
         gc.setIdType(idType); // 要自定义ID的生成策略，否则代码生成器不会生成
 
-        // 自定义文件命名，注意 %s 会自动填充表实体属性！
-        // gc.setEntityName("%sEntity");
-        // gc.setMapperName("%sDao");
-        // gc.setXmlName("%sDao");
-         gc.setServiceName("%sService");
-        // gc.setServiceImplName("%sServiceDiy");
-        // gc.setControllerName("%sAction");
+        if (entityBaseName!=null) {
+            gc.setEntityName(entityBaseName+"Entity");
+            gc.setMapperName(entityBaseName+"Mapper");
+            gc.setXmlName(entityBaseName+"Mapper");
+            gc.setServiceName(entityBaseName+"Service");
+            gc.setServiceImplName(entityBaseName+"ServiceImpl");
+            gc.setControllerName(entityBaseName+"Controller");
+        } else { // 自定义文件命名，注意 %s 会自动填充表实体属性！
+            // gc.setEntityName("%sEntity");
+            // gc.setMapperName("%sDao");
+            // gc.setXmlName("%sDao");
+            gc.setServiceName("%sService");
+            // gc.setServiceImplName("%sServiceDiy");
+            // gc.setControllerName("%sAction");
+        }
         mpg.setGlobalConfig(gc);
 
         // 数据源配置
@@ -122,22 +132,29 @@ public class PostgresqlGenerator {
                 this.setMap(map);
             }
         };
-        if (generateXml) {
-            List<FileOutConfig> focList = new ArrayList();
+        List<FileOutConfig> focList = new ArrayList();
+        if (fileGenerate.generateXml()) {
             focList.add(new FileOutConfig("/templates/mapper.xml.ftl") {
                 @Override
                 public String outputFile(TableInfo tableInfo) { // 自定义输入文件名称
-                    return outputDir + "/resources/mapper/" + tableInfo.getEntityName() + ".xml";
+                    return outputDir + "/resources/mapper/" + tableInfo.getMapperName() + ".xml";
                 }
             });
-            cfg.setFileOutConfigList(focList);
         }
+        cfg.setFileOutConfigList(focList);
         mpg.setCfg(cfg);
 
         // 自定义模板配置，模板可以参考源码 /mybatis-plus/src/main/resources/template 使用 copy
         // 至您项目 src/main/resources/template 目录下，模板名称也可自定义如下配置：
         TemplateConfig tc = new TemplateConfig();
-        tc.setXml(null);  // 这个标注了表示不使用xml模板，这样子就不会在 mapper.java 接口的文件夹下生成xml文件夹，也不会生成xml配置文件，但是如果配置了List<FileOutConfig> focList，会在指定的路径生成xml文件
+        tc.setXml(null);  // 这个标注了表示不使用xml模板，这样子就不会在 mapper.java 接口的文件夹下生成xml文件夹，也不会生成xml文件，但是如果配置了List<FileOutConfig> focList，会在指定的路径生成xml文件
+        if (fileGenerate.generateService()==false) { // 不生成service和ServiceImpl
+            tc.setService(null);
+            tc.setServiceImpl(null);
+        }
+        if (fileGenerate.generateController()==false) { // 不生成Controller
+            tc.setController(null);
+        }
         mpg.setTemplate(tc);
 
         // 执行生成

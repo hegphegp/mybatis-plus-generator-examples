@@ -16,6 +16,7 @@
 package com.codingfly.generator.postgres.common.origin;
 
 import com.baomidou.mybatisplus.annotation.DbType;
+import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.core.toolkit.StringPool;
 import com.baomidou.mybatisplus.generator.AutoGenerator;
 import com.baomidou.mybatisplus.generator.InjectionConfig;
@@ -50,11 +51,10 @@ public class OriginPostgreSQLGenerator {
         gc.setEnableCache(false);// XML 二级缓存
         gc.setBaseResultMap(true);// XML ResultMap
         gc.setBaseColumnList(false);// XML columList
-        //gc.setKotlin(true); // 是否生成 kotlin 代码
         gc.setSwagger2(true); // 是否生成 Swagger2 注解
         gc.setAuthor("hubin");
         gc.setDateType(DateType.ONLY_DATE);
-//        gc.setIdType(IdType.AUTO); // 要自定义ID的生成策略，否则代码生成器不会生成
+        gc.setIdType(IdType.AUTO); // 要自定义ID的生成策略，否则代码生成器不会生成
 
         // 自定义文件命名，注意 %s 会自动填充表实体属性！
         // gc.setEntityName("%sEntity");
@@ -84,12 +84,10 @@ public class OriginPostgreSQLGenerator {
 
         // strategy.setCapitalMode(true);// 全局大写命名
         // strategy.setDbColumnUnderline(true);// 全局下划线命名
-        strategy.setTablePrefix("bmd_", "mp_");// 表前缀
-        strategy.setFieldPrefix("A_");
         strategy.setEntityTableFieldAnnotationEnable(true); // 字段是否生成映射注解，实体类是否生成 @TableName("") 注解
         strategy.setNaming(NamingStrategy.underline_to_camel);// 表名生成策略
         strategy.setColumnNaming(NamingStrategy.underline_to_camel);// 允许字段策略独立设置，默认为 naming 策略
-//        strategy.setInclude("*"); // 需要生成的表，支持正则表达式
+        strategy.setInclude("sys_user"); // 需要生成的表，支持正则表达式
         // strategy.setExclude("test"); // 排除生成的表，支持正则表达式
         // 自定义实体父类
         // strategy.setSuperEntityClass("com.baomidou.demo.TestEntity");
@@ -126,9 +124,8 @@ public class OriginPostgreSQLGenerator {
             @Override
             public void initMap() {
                 Map<String, Object> map = new HashMap();
-//                map.put("dbType", DbType.POSTGRE_SQL.getDb());
+                map.put("dbType", DbType.POSTGRE_SQL.getDb());
                 map.put("schema", "public");
-                map.put("abc", this.getConfig().getGlobalConfig().getAuthor() + "-mp");
                 this.setMap(map);
             }
         };
@@ -159,8 +156,6 @@ public class OriginPostgreSQLGenerator {
         // 执行生成
         mpg.setTemplateEngine(new FreemarkerTemplateEngine());
         mpg.execute();
-        // 打印注入设置
-        System.err.println(mpg.getCfg().getMap().get("abc"));
     }
 
 }
