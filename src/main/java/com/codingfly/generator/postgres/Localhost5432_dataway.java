@@ -19,6 +19,7 @@ public class Localhost5432_dataway {
     public static Boolean enableCache = true;
     public static Boolean baseResultMap = true;
     public static Boolean baseColumnList = true;
+    public static Boolean lombok = true;
     public static String packagePath = "com.codingfly";
 
     public static void main(String[] args) {
@@ -78,6 +79,6 @@ public class Localhost5432_dataway {
     public static void generate(String schema, String tableName, String entityBaseName, IdType idType, String module, String packagePath, FileGenerate fileGenerate,
                                 Boolean activeRecord) {
         PostgresqlGenerator.generatorCode(url, username, password, author, outputDir, schema, tableName, entityBaseName, idType, module, packagePath, fileGenerate,
-                activeRecord, swagger, enableCache, baseResultMap, baseColumnList);
+                activeRecord, swagger, enableCache, baseResultMap, baseColumnList, lombok);
     }
 }

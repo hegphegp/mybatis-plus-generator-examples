@@ -41,7 +41,7 @@ public class PostgresqlGenerator {
 
     public static void generatorCode(String url, String username, String password, String author, String outputDir, String schema, String tableName, String entityBaseName, IdType idType,
                                      String module, String packagePath, FileGenerate fileGenerate, Boolean activeRecord, Boolean swagger, Boolean enableCache,
-                                     Boolean baseResultMap, Boolean baseColumnList) {
+                                     Boolean baseResultMap, Boolean baseColumnList, Boolean lombok) {
         AutoGenerator mpg = new AutoGenerator();
 
         // 包配置
@@ -94,6 +94,8 @@ public class PostgresqlGenerator {
 
         // 策略配置
         StrategyConfig strategy = new StrategyConfig();
+        strategy.setRestControllerStyle(true) // controller类的注解是@RestController，如果为false，注解是@Controller
+            .setEntityLombokModel(lombok);
 
         // strategy.setCapitalMode(true);// 全局大写命名
         // strategy.setDbColumnUnderline(true);// 全局下划线命名
@@ -129,6 +131,7 @@ public class PostgresqlGenerator {
                 Map<String, Object> map = new HashMap();
                 map.put("dbType", DbType.POSTGRE_SQL.getDb());
                 map.put("schema", schema);
+                map.put("entityBaseName", entityBaseName);
                 this.setMap(map);
             }
         };

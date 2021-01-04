@@ -15,11 +15,13 @@ public class Localhost5432_bootshiro {
     public static String username = "sde";
     public static String password = "postgres";
     public static String url = "jdbc:postgresql://localhost:5432/bootshiro";
-    public static Boolean swagger = false;
-    public static Boolean enableCache = true;
-    public static Boolean baseResultMap = true;
-    public static Boolean baseColumnList = true;
+    public static Boolean swagger = true;
+    public static Boolean enableCache = false;
+    public static Boolean baseResultMap = false;
+    public static Boolean baseColumnList = false;
+    public static Boolean lombok = true;
     public static String packagePath = "com.codingfly";
+    public static String driver = "org.postgresql.Driver";
 
     public static void main(String[] args) {
 //        getTableInfo();
@@ -30,7 +32,7 @@ public class Localhost5432_bootshiro {
      * 生成generate的方法
      */
     public static void getTableInfo() {
-        List<Map<String, Object>> list = SqlUtils.query(username, password, "org.postgresql.Driver", url, MyPostgreSqlQuery.querySchemaTableSql());
+        List<Map<String, Object>> list = SqlUtils.query(username, password, driver, url, MyPostgreSqlQuery.querySchemaTableSql());
         System.out.println("\n\n\n\n\n");
         for (Map<String, Object> map:list) {
             String schema = map.get("table_schema").toString();
@@ -68,6 +70,6 @@ public class Localhost5432_bootshiro {
     public static void generate(String schema, String tableName, String entityBaseName, IdType idType, String module, String packagePath, FileGenerate fileGenerate,
                                 Boolean activeRecord) {
         PostgresqlGenerator.generatorCode(url, username, password, author, outputDir, schema, tableName, entityBaseName, idType, module, packagePath, fileGenerate,
-                activeRecord, swagger, enableCache, baseResultMap, baseColumnList);
+                activeRecord, swagger, enableCache, baseResultMap, baseColumnList, lombok);
     }
 }
