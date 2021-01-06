@@ -13,7 +13,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.codingfly.generator.postgres.common;
+package com.codingfly.generator.mysql.common;
 
 import com.baomidou.mybatisplus.annotation.DbType;
 import com.baomidou.mybatisplus.annotation.IdType;
@@ -21,11 +21,13 @@ import com.baomidou.mybatisplus.generator.AutoGenerator;
 import com.baomidou.mybatisplus.generator.InjectionConfig;
 import com.baomidou.mybatisplus.generator.config.*;
 import com.baomidou.mybatisplus.generator.config.po.TableInfo;
+import com.baomidou.mybatisplus.generator.config.querys.MySqlQuery;
 import com.baomidou.mybatisplus.generator.config.rules.DateType;
 import com.baomidou.mybatisplus.generator.config.rules.NamingStrategy;
 import com.baomidou.mybatisplus.generator.engine.FreemarkerTemplateEngine;
 import com.codingfly.generator.common.FileGenerate;
-import org.postgresql.Driver;
+import com.codingfly.generator.utils.SqlUtils;
+import com.mysql.cj.jdbc.Driver;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -34,16 +36,25 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * PostgresqlGenerator
+ * MysqlGenerator
  *
  * @author nieqiurong
  * @since 2016/12/25
  */
-public class PostgresqlGenerator {
+public class MysqlGenerator {
 
     public static String separator = File.separator;
 
-    public static void generatorCode(String url, String username, String password, String author, String outputDir, String schema, String tableName, String entityBaseName, IdType idType,
+    public static List<String> queryAllTableNames(String username, String password, String driver, String url) {
+        List<Map<String, Object>> list = SqlUtils.query(username, password, driver, url, new MySqlQuery().tablesSql());
+        List<String> tableNames = new ArrayList();
+        for (Map<String, Object> map:list) {
+            tableNames.add(map.get("Name").toString());
+        }
+        return tableNames;
+    }
+
+    public static void generatorCode(String url, String username, String password, String author, String outputDir, String tableName, String entityBaseName, IdType idType,
                                      String module, String packagePath, FileGenerate fileGenerate, Boolean activeRecord, Boolean swagger, Boolean enableCache,
                                      Boolean baseResultMap, Boolean baseColumnList, Boolean lombok) {
         AutoGenerator mpg = new AutoGenerator();
@@ -87,9 +98,19 @@ public class PostgresqlGenerator {
 
         // 数据源配置
         DataSourceConfig dsc = new DataSourceConfig();
-        dsc.setSchemaName(schema);               // 指定 schema
-        dsc.setDbType(DbType.POSTGRE_SQL);
-        dsc.setDbQuery(new MyPostgreSqlQuery()); // 自定义数据库信息查询
+        dsc.setDbType(DbType.MYSQL);
+        dsc.setDbQuery(new MySqlQuery() {
+            /**
+             * 重写父类预留查询自定义字段<br>
+             * 这里查询的 SQL 对应父类 tableFieldsSql 的查询字段，默认不能满足你的需求请重写它<br>
+             * 模板中调用：  table.fields 获取所有字段信息，
+             * 然后循环字段获取 field.customMap 从 MAP 中获取注入字段如下  NULL 或者 PRIVILEGES
+             */
+            @Override
+            public String[] fieldCustom() {
+                return new String[]{"NULL", "PRIVILEGES"};
+            }
+        }); // 自定义数据库信息查询
         dsc.setDriverName(Driver.class.getName());
         dsc.setUsername(username);
         dsc.setPassword(password);
@@ -133,8 +154,6 @@ public class PostgresqlGenerator {
             @Override
             public void initMap() {
                 Map<String, Object> map = new HashMap();
-                map.put("dbType", DbType.POSTGRE_SQL.getDb());
-                map.put("schema", schema);
                 map.put("entityBaseName", entityBaseName);
                 map.put("pojoPackage", packagePath+"."+module+".pojo");
                 map.put("pojo", entityBaseName);

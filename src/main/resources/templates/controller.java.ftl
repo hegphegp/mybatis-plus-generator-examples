@@ -68,7 +68,8 @@ public class ${table.controllerName} {
     @ApiImplicitParam(paramType="path", name = "id", value = "id", required = true)
     </#if>
     @PutMapping(value = "/{id}")
-    public void editById(@RequestBody ${entity} entity) {
+    public void editById(@PathVariable("id") String id,
+                         @RequestBody ${entity} entity) {
         ${table.serviceName?uncap_first}.updateById(entity);
     }
 
